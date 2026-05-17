@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CodeGuard — Project SRS Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css"/>
+<style>
+:root{
+  --bg:#ffffff;--bg2:#f5f4f0;--bg3:#eeede8;
+  --text:#1a1a18;--text2:#6b6b66;--text3:#9a9992;
+  --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.2);
+  --blue:#185FA5;--blue-bg:#E6F1FB;--blue-text:#0C447C;
+  --teal:#0F6E56;--teal-bg:#E1F5EE;--teal-text:#085041;
+  --purple:#534AB7;--purple-bg:#EEEDFE;--purple-text:#3C3489;
+  --amber:#854F0B;--amber-bg:#FAEEDA;--amber-text:#633806;
+  --green:#3B6D11;--green-bg:#EAF3DE;--green-text:#27500A;
+  --coral:#993C1D;--coral-bg:#FAECE7;--coral-text:#712B13;
+  --red:#A32D2D;--red-bg:#FCEBEB;
+  --font:'system-ui',-apple-system,sans-serif;
+  --mono:'ui-monospace','Cascadia Code',monospace;
+  --radius:8px;--radius-lg:12px;
+  --sidebar:240px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;
+    --text:#e8e6df;--text2:#a09e96;--text3:#6b6965;
+    --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.18);
+    --blue:#378ADD;--blue-bg:#0c2d4a;--blue-text:#B5D4F4;
+    --teal:#1D9E75;--teal-bg:#062e22;--teal-text:#9FE1CB;
+    --purple:#7F77DD;--purple-bg:#1e1b40;--purple-text:#CECBF6;
+    --amber:#EF9F27;--amber-bg:#2e1f04;--amber-text:#FAC775;
+    --green:#639922;--green-bg:#1b2e08;--green-text:#C0DD97;
+    --coral:#D85A30;--coral-bg:#2e120a;--coral-text:#F5C4B3;
+    --red:#E24B4A;--red-bg:#2e0f0f;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg3);color:var(--text);display:flex;min-height:100vh;font-size:14px;line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Sidebar */
+#sidebar{width:var(--sidebar);flex-shrink:0;background:var(--bg);border-right:0.5px solid var(--border);height:100vh;position:sticky;top:0;overflow-y:auto;display:flex;flex-direction:column}
+.sidebar-header{padding:20px 16px 12px;border-bottom:0.5px solid var(--border)}
+.sidebar-logo{font-size:16px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:8px}
+.sidebar-logo i{font-size:18px;color:var(--purple)}
+.sidebar-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.nav-section{padding:12px 16px 4px;font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:13px;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.nav-item:hover{color:var(--text);background:var(--bg2)}
+.nav-item.active{color:var(--purple);border-left-color:var(--purple);background:var(--purple-bg);font-weight:500}
+.nav-item i{font-size:15px;flex-shrink:0}
+.progress-wrap{padding:16px;border-top:0.5px solid var(--border);margin-top:auto}
+.progress-label{font-size:11px;color:var(--text3);margin-bottom:6px;display:flex;justify-content:space-between}
+.progress-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--purple);border-radius:2px;transition:width .3s}
+
+/* Main */
+#main{flex:1;overflow-y:auto;min-width:0}
+.section{display:none;padding:32px 36px 60px;max-width:900px}
+.section.active{display:block}
+.section-title{font-size:22px;font-weight:500;color:var(--text);margin-bottom:6px}
+.section-desc{font-size:14px;color:var(--text2);margin-bottom:28px;line-height:1.6}
+
+/* Cards */
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.card-title i{font-size:16px;color:var(--text3)}
+.card-sub{font-size:13px;color:var(--text2);line-height:1.6}
+
+/* Tags */
+.tag{display:inline-flex;align-items:center;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;margin:2px}
+.tag-blue{background:var(--blue-bg);color:var(--blue-text)}
+.tag-teal{background:var(--teal-bg);color:var(--teal-text)}
+.tag-purple{background:var(--purple-bg);color:var(--purple-text)}
+.tag-amber{background:var(--amber-bg);color:var(--amber-text)}
+.tag-green{background:var(--green-bg);color:var(--green-text)}
+.tag-coral{background:var(--coral-bg);color:var(--coral-text)}
+
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.metric{background:var(--bg2);border-radius:var(--radius);padding:14px 16px}
+.metric-num{font-size:22px;font-weight:500;color:var(--text)}
+.metric-lbl{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* Section label */
+.label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin:20px 0 10px}
+.label:first-child{margin-top:0}
+
+/* Info row */
+.info-row{display:flex;gap:12px;padding:8px 0;border-bottom:0.5px solid var(--border);font-size:13px}
+.info-row:last-child{border-bottom:none}
+.info-key{color:var(--text2);width:140px;flex-shrink:0}
+.info-val{color:var(--text);flex:1;line-height:1.5}
+
+/* Tech chip */
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:12px;padding:4px 10px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--mono)}
+
+/* Timeline */
+.week-grid{display:flex;flex-direction:column;gap:2px}
+.week-row{display:grid;grid-template-columns:72px 1fr;gap:0;align-items:stretch}
+.week-lbl{font-size:11px;font-weight:500;color:var(--text3);text-align:right;padding:10px 14px 10px 0;border-right:2px solid var(--border2);display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:1px}
+.week-lbl span{font-size:20px;font-weight:500;color:var(--text2);letter-spacing:0}
+.week-body{padding:10px 0 10px 16px}
+.week-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px}
+.week-chips{display:flex;flex-wrap:wrap;gap:5px}
+
+/* SVG diagram */
+.diagram-wrap{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px;overflow:hidden}
+.diagram-wrap svg{width:100%;display:block}
+
+/* Checklist */
+.check-section{margin-bottom:24px}
+.check-section-title{font-size:15px;font-weight:500;color:var(--text);padding:10px 14px;background:var(--bg2);border-radius:var(--radius);margin-bottom:2px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:0.5px solid var(--border)}
+.check-section-title .cs-left{display:flex;align-items:center;gap:8px}
+.check-section-title i{font-size:15px;color:var(--text3)}
+.check-progress{font-size:11px;color:var(--text3);background:var(--bg);padding:2px 8px;border-radius:20px;border:0.5px solid var(--border)}
+.check-items{padding:4px 0}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:7px 14px;border-radius:var(--radius);cursor:pointer;transition:background .1s;font-size:13px;color:var(--text2)}
+.check-item:hover{background:var(--bg2)}
+.check-item.sub{padding-left:36px;font-size:12px}
+.check-item input[type=checkbox]{width:16px;height:16px;flex-shrink:0;margin-top:1px;accent-color:var(--purple);cursor:pointer}
+.check-item.done{color:var(--text3);text-decoration:line-through}
+.check-item-text{line-height:1.5;flex:1}
+.stage-badge{font-size:10px;padding:2px 7px;border-radius:20px;flex-shrink:0;align-self:center}
+
+/* Resource cards */
+.res-item{background:var(--bg2);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
+.res-icon{font-size:18px;color:var(--text3);flex-shrink:0;margin-top:1px}
+.res-body{flex:1}
+.res-name{font-size:13px;font-weight:500;color:var(--text)}
+.res-desc{font-size:12px;color:var(--text2);margin-top:2px;line-height:1.5}
+.res-link{font-size:11px;color:var(--blue);font-family:var(--mono);margin-top:4px;display:block;word-break:break-all}
+.res-tag{font-size:10px;padding:2px 7px;border-radius:20px;flex-shrink:0}
+.tag-yt{background:var(--red-bg);color:var(--red)}
+.tag-docs{background:var(--blue-bg);color:var(--blue-text)}
+.tag-free{background:var(--green-bg);color:var(--green-text)}
+
+/* Alert box */
+.alert{padding:12px 16px;border-radius:var(--radius);font-size:13px;line-height:1.6;margin:16px 0}
+.alert-warn{background:var(--amber-bg);color:var(--amber-text);border-left:3px solid var(--amber)}
+.alert-info{background:var(--blue-bg);color:var(--blue-text);border-left:3px solid var(--blue)}
+.alert-success{background:var(--green-bg);color:var(--green-text);border-left:3px solid var(--green)}
+
+/* Flow box for request flow */
+.flow-wrap{display:flex;flex-direction:column;gap:4px}
+.flow-step{background:var(--bg2);border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;gap:10px}
+.flow-num{width:24px;height:24px;border-radius:50%;background:var(--purple-bg);color:var(--purple-text);font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.flow-step-title{font-size:13px;font-weight:500;color:var(--text)}
+.flow-step-sub{font-size:11px;color:var(--text2)}
+.flow-arrow{text-align:center;color:var(--text3);font-size:14px;padding:0 0 0 12px}
+
+/* Milestone */
+.milestone{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)}
+.milestone:last-child{border-bottom:none}
+.ms-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.ms-title{font-size:13px;color:var(--text)}
+.ms-sub{font-size:11px;color:var(--text2);margin-top:2px}
+
+/* Tabs inside section */
+.inner-tabs{display:flex;gap:0;border-bottom:0.5px solid var(--border);margin-bottom:16px}
+.inner-tab{font-size:12px;padding:8px 14px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px;white-space:nowrap}
+.inner-tab.active{color:var(--text);border-bottom-color:var(--purple);font-weight:500}
+.inner-pane{display:none}.inner-pane.active{display:block}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo"><i class="ti ti-shield-code" aria-hidden="true"></i>CodeGuard</div>
+    <div class="sidebar-sub">Project SRS — Stage 1 MVP</div>
+  </div>
+
+  <div class="nav-section">Documentation</div>
+  <div class="nav-item active" onclick="goto('overview')"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Overview</div>
+  <div class="nav-item" onclick="goto('architecture')"><i class="ti ti-topology-star-ring" aria-hidden="true"></i>Architecture</div>
+  <div class="nav-item" onclick="goto('pipeline')"><i class="ti ti-git-merge" aria-hidden="true"></i>Agent pipeline</div>
+  <div class="nav-item" onclick="goto('request-flow')"><i class="ti ti-route" aria-hidden="true"></i>Request flow</div>
+  <div class="nav-item" onclick="goto('techstack')"><i class="ti ti-stack-2" aria-hidden="true"></i>Tech stack</div>
+
+  <div class="nav-section">Build plan</div>
+  <div class="nav-item" onclick="goto('prebuild')"><i class="ti ti-brain" aria-hidden="true"></i>Pre-build (Days 1–10)</div>
+  <div class="nav-item" onclick="goto('stage1')"><i class="ti ti-hammer" aria-hidden="true"></i>Stage 1 — Sprint</div>
+  <div class="nav-item" onclick="goto('stage2')"><i class="ti ti-trending-up" aria-hidden="true"></i>Stage 2 — Depth</div>
+  <div class="nav-item" onclick="goto('stage3')"><i class="ti ti-rocket" aria-hidden="true"></i>Stage 3 — Advanced</div>
+
+  <div class="nav-section">Reference</div>
+  <div class="nav-item" onclick="goto('resources')"><i class="ti ti-books" aria-hidden="true"></i>Resources</div>
+  <div class="nav-item" onclick="goto('checkpoints')"><i class="ti ti-list-check" aria-hidden="true"></i>Checkpoints</div>
+
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Overall progress</span><span id="prog-pct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main id="main">
+
+<!-- ============ OVERVIEW ============ -->
+<div class="section active" id="s-overview">
+  <div class="section-title">CodeGuard — Agentic code review system</div>
+  <div class="section-desc">A multi-agent AI platform where specialized LLM agents act as senior engineers reviewing a codebase from four distinct perspectives — bugs, security, code style, and test coverage — producing a unified structured report.</div>
+
+  <div class="grid-3" style="margin-bottom:20px">
+    <div class="metric"><div class="metric-num">4</div><div class="metric-lbl">Specialized agents</div></div>
+    <div class="metric"><div class="metric-num">6 wks</div><div class="metric-lbl">Stage 1 build time</div></div>
+    <div class="metric"><div class="metric-num">3</div><div class="metric-lbl">Total stages</div></div>
+  </div>
+
+  <div class="label">Project identity</div>
+  <div class="card">
+    <div class="info-row"><div class="info-key">Project name</div><div class="info-val">CodeGuard — Agentic Code Review System</div></div>
+    <div class="info-row"><div class="info-key">Type</div><div class="info-val">Multi-agent AI platform (academic capstone + portfolio)</div></div>
+    <div class="info-row"><div class="info-key">Domain</div><div class="info-val">Agentic AI / Developer tooling / LLM Orchestration</div></div>
+    <div class="info-row"><div class="info-key">JD alignment</div><div class="info-val">LangChain, LangGraph, FastAPI, agents, structured output, memory — direct match to Agentic AI Developer JD</div></div>
+    <div class="info-row"><div class="info-key">Target rating</div><div class="info-val">7.5/10 after Stage 1 (deployed, polished MVP) → 8.5/10 after Stage 2</div></div>
+    <div class="info-row"><div class="info-key">GPT rating (current plan)</div><div class="info-val">Stage 1 plan = 6.8/10 → rises with execution quality and deployment</div></div>
+  </div>
+
+  <div class="label">What makes it non-generic</div>
+  <div class="card">
+    <div class="card-sub">Unlike a basic chatbot or RAG wrapper, CodeGuard has a genuine multi-agent architecture: a <strong>supervisor orchestrator</strong> delegates to four specialized agents running in parallel via <code>asyncio.gather()</code>, each returning a typed Pydantic object. An <strong>assembler agent</strong> deduplicates findings and assigns severity scores. The system stores a persistent review history in PostgreSQL and ingests real GitHub repositories — not toy code snippets.</div>
+    <div style="margin-top:12px">
+      <span class="tag tag-purple">Multi-agent orchestration</span>
+      <span class="tag tag-blue">Async parallel execution</span>
+      <span class="tag tag-teal">Structured LLM output</span>
+      <span class="tag tag-amber">GitHub repo ingestion</span>
+      <span class="tag tag-green">Persistent review history</span>
+      <span class="tag tag-coral">Severity scoring</span>
+    </div>
+  </div>
+
+  <div class="label">Stage milestones at a glance</div>
+  <div class="card">
+    <div class="milestone">
+      <div class="ms-dot" style="background:var(--blue)"></div>
+      <div><div class="ms-title">Stage 1 — Resume-worthy MVP (Weeks 1–6)</div><div class="ms-sub">Orchestrator + 4 agents + FastAPI + PostgreSQL + Streamlit + GitHub ingestion + deployed live URL</div></div>
+    </div>
+    <div class="milestone">
+      <div class="ms-dot" style="background:var(--amber)"></div>
+      <div><div class="ms-title">Stage 2 — Technical depth (after Stage 1 ships)</div><div class="ms-sub">AST-based bug detection + Bandit/Semgrep static analysis + semantic code chunking + Mem0 memory</div></div>
+    </div>
+    <div class="milestone">
+      <div class="ms-dot" style="background:var(--green)"></div>
+      <div><div class="ms-title">Stage 3 — Serious engineering (long-term)</div><div class="ms-sub">Autonomous fix loop + GitHub PR auto-review via webhooks + execution sandbox</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ARCHITECTURE ============ -->
+<div class="section" id="s-architecture">
+  <div class="section-title">System architecture</div>
+  <div class="section-desc">High-level view of all system components and how they connect — from user input through to the final report and persistent storage.</div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 840 520" role="img" xmlns="http://www.w3.org/2000/svg">
+      <title>CodeGuard system architecture</title>
+      <desc>User submits code via Streamlit UI to a FastAPI backend. The backend coordinates with a LangGraph orchestrator, which fans out to four specialized agents. Results are assembled and stored in PostgreSQL, then rendered back in Streamlit.</desc>
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <style>
+        .at{fill:var(--text);font-size:13px;font-family:system-ui,sans-serif}
+        .as{fill:var(--text2);font-size:11px;font-family:system-ui,sans-serif}
+        .ah{fill:var(--text);font-size:13px;font-weight:500;font-family:system-ui,sans-serif}
+        .abox{fill:var(--bg2);stroke:var(--border2);stroke-width:0.5}
+        .ablue{fill:#E6F1FB;stroke:#378ADD;stroke-width:0.8}
+        .ateal{fill:#E1F5EE;stroke:#1D9E75;stroke-width:0.8}
+        .apurple{fill:#EEEDFE;stroke:#7F77DD;stroke-width:0.8}
+        .aamber{fill:#FAEEDA;stroke:#EF9F27;stroke-width:0.8}
+        .agreen{fill:#EAF3DE;stroke:#639922;stroke-width:0.8}
+        .ablue-t{fill:#0C447C}
+        .ateal-t{fill:#085041}
+        .apurple-t{fill:#3C3489}
+        .aamber-t{fill:#633806}
+        .agreen-t{fill:#27500A}
+        @media(prefers-color-scheme:dark){
+          .at{fill:#e8e6df}.as{fill:#a09e96}.ah{fill:#e8e6df}
+          .abox{fill:#252523;stroke:rgba(255,255,255,0.15)}
+          .ablue{fill:#0c2d4a;stroke:#378ADD}.ateal{fill:#062e22;stroke:#1D9E75}
+          .apurple{fill:#1e1b40;stroke:#7F77DD}.aamber{fill:#2e1f04;stroke:#EF9F27}
+          .agreen{fill:#1b2e08;stroke:#639922}
+          .ablue-t{fill:#B5D4F4}.ateal-t{fill:#9FE1CB}.apurple-t{fill:#CECBF6}
+          .aamber-t{fill:#FAC775}.agreen-t{fill:#C0DD97}
+        }
+        .arr2{stroke:var(--text2);stroke-width:1;fill:none}
+      </style>
+
+      <!-- User box -->
+      <rect class="ablue" x="30" y="30" width="130" height="54" rx="8"/>
+      <text class="ah ablue-t" x="95" y="52" text-anchor="middle" dominant-baseline="central">Streamlit UI</text>
+      <text class="as ablue-t" x="95" y="70" text-anchor="middle" dominant-baseline="central">User frontend</text>
+
+      <!-- FastAPI -->
+      <rect class="apurple" x="220" y="30" width="140" height="54" rx="8"/>
+      <text class="ah apurple-t" x="290" y="52" text-anchor="middle" dominant-baseline="central">FastAPI backend</text>
+      <text class="as apurple-t" x="290" y="70" text-anchor="middle" dominant-baseline="central">Async REST API</text>
+
+      <!-- GitHub fetcher -->
+      <rect class="abox" x="220" y="140" width="140" height="44" rx="8"/>
+      <text class="ah" x="290" y="162" text-anchor="middle" dominant-baseline="central">GitHub fetcher</text>
+
+      <!-- Chunker -->
+      <rect class="abox" x="220" y="200" width="140" height="44" rx="8"/>
+      <text class="ah" x="290" y="222" text-anchor="middle" dominant-baseline="central">Code chunker</text>
+
+      <!-- Orchestrator -->
+      <rect class="apurple" x="420" y="30" width="160" height="54" rx="8"/>
+      <text class="ah apurple-t" x="500" y="52" text-anchor="middle" dominant-baseline="central">Orchestrator</text>
+      <text class="as apurple-t" x="500" y="70" text-anchor="middle" dominant-baseline="central">LangGraph StateGraph</text>
+
+      <!-- 4 agents row -->
+      <rect class="ateal" x="50" y="310" width="130" height="54" rx="8"/>
+      <text class="ah ateal-t" x="115" y="332" text-anchor="middle" dominant-baseline="central">Bug finder</text>
+      <text class="as ateal-t" x="115" y="350" text-anchor="middle" dominant-baseline="central">Logic errors</text>
+
+      <rect class="ateal" x="210" y="310" width="130" height="54" rx="8"/>
+      <text class="ah ateal-t" x="275" y="332" text-anchor="middle" dominant-baseline="central">Security agent</text>
+      <text class="as ateal-t" x="275" y="350" text-anchor="middle" dominant-baseline="central">Vuln. detection</text>
+
+      <rect class="ateal" x="370" y="310" width="130" height="54" rx="8"/>
+      <text class="ah ateal-t" x="435" y="332" text-anchor="middle" dominant-baseline="central">Style checker</text>
+      <text class="as ateal-t" x="435" y="350" text-anchor="middle" dominant-baseline="central">Code quality</text>
+
+      <rect class="ateal" x="530" y="310" width="130" height="54" rx="8"/>
+      <text class="ah ateal-t" x="595" y="332" text-anchor="middle" dominant-baseline="central">Test generator</text>
+      <text class="as ateal-t" x="595" y="350" text-anchor="middle" dominant-baseline="central">Unit tests</text>
+
+      <!-- Assembler -->
+      <rect class="aamber" x="250" y="430" width="200" height="54" rx="8"/>
+      <text class="ah aamber-t" x="350" y="452" text-anchor="middle" dominant-baseline="central">Assembler agent</text>
+      <text class="as aamber-t" x="350" y="470" text-anchor="middle" dominant-baseline="central">Merge + score + dedupe</text>
+
+      <!-- PostgreSQL -->
+      <rect class="agreen" x="620" y="430" width="130" height="54" rx="8"/>
+      <text class="ah agreen-t" x="685" y="452" text-anchor="middle" dominant-baseline="central">PostgreSQL</text>
+      <text class="as agreen-t" x="685" y="470" text-anchor="middle" dominant-baseline="central">Review history</text>
+
+      <!-- Arrows -->
+      <line x1="160" y1="57" x2="218" y2="57" class="arr2" marker-end="url(#a)"/>
+      <line x1="360" y1="57" x2="418" y2="57" class="arr2" marker-end="url(#a)"/>
+      <line x1="290" y1="84" x2="290" y2="138" class="arr2" marker-end="url(#a)"/>
+      <line x1="290" y1="184" x2="290" y2="198" class="arr2" marker-end="url(#a)"/>
+
+      <!-- Orchestrator to agents -->
+      <path d="M500,84 L500,290 L115,290 L115,308" class="arr2" marker-end="url(#a)"/>
+      <path d="M500,84 L500,290 L275,290 L275,308" class="arr2" marker-end="url(#a)"/>
+      <path d="M500,84 L500,290 L435,290 L435,308" class="arr2" marker-end="url(#a)"/>
+      <path d="M500,84 L500,290 L595,290 L595,308" class="arr2" marker-end="url(#a)"/>
+
+      <!-- Agents to assembler -->
+      <path d="M115,364 L115,410 L350,410 L350,428" class="arr2" marker-end="url(#a)"/>
+      <path d="M275,364 L275,410 L350,410 L350,428" class="arr2" marker-end="url(#a)"/>
+      <path d="M435,364 L435,410 L350,410 L350,428" class="arr2" marker-end="url(#a)"/>
+      <path d="M595,364 L595,410 L350,410 L350,428" class="arr2" marker-end="url(#a)"/>
+
+      <!-- Assembler to PostgreSQL -->
+      <path d="M450,457 L618,457" class="arr2" marker-end="url(#a)"/>
+
+      <!-- Label: asyncio.gather -->
+      <text class="as" x="350" y="285" text-anchor="middle">asyncio.gather() — all 4 run in parallel</text>
+    </svg>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-server" aria-hidden="true"></i>Backend layer</div>
+      <div class="card-sub">FastAPI handles all incoming requests asynchronously. A GitHub file fetcher pulls .py files from repo URLs. A chunker splits large files using Python AST to preserve function boundaries before sending to agents.</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-cpu" aria-hidden="true"></i>Agent layer</div>
+      <div class="card-sub">A LangGraph StateGraph manages state across the pipeline. The orchestrator node routes code to all four agents simultaneously. Each agent uses LangChain with Pydantic structured output — no raw text parsing.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ AGENT PIPELINE ============ -->
+<div class="section" id="s-pipeline">
+  <div class="section-title">Agent pipeline detail</div>
+  <div class="section-desc">Each agent's internal structure, what it receives, what Pydantic model it returns, and how the assembler merges everything.</div>
+
+  <div class="label">Four specialized agents</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-bug" aria-hidden="true"></i>Bug finder agent</div>
+      <div class="card-sub">Receives: code chunk + filename<br>Analyzes: null dereferences, index errors, off-by-one, unhandled exceptions, dead code<br>Returns: <code>BugFinderOutput(issues: List[Issue])</code> where Issue has title, severity, line_number, suggestion</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-shield" aria-hidden="true"></i>Security agent</div>
+      <div class="card-sub">Receives: code chunk + filename<br>Analyzes: SQL injection, hardcoded secrets, insecure deserialization, open redirects, path traversal<br>Returns: <code>SecurityOutput(vulnerabilities: List[Vulnerability])</code> with CVE references where applicable</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-palette" aria-hidden="true"></i>Style checker agent</div>
+      <div class="card-sub">Receives: code chunk<br>Analyzes: PEP 8 violations, naming conventions, function complexity, magic numbers, missing docstrings<br>Returns: <code>StyleOutput(issues: List[StyleIssue])</code> with category and fix suggestion</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-test-pipe" aria-hidden="true"></i>Test generator agent</div>
+      <div class="card-sub">Receives: code chunk (function-level)<br>Analyzes: missing test coverage, edge cases, boundary conditions<br>Returns: <code>TestOutput(test_cases: List[TestCase])</code> with actual runnable pytest code per function</div>
+    </div>
+  </div>
+
+  <div class="label">Assembler agent logic</div>
+  <div class="card">
+    <div class="card-sub">The assembler agent receives all four Pydantic outputs. Its job: (1) deduplicate findings that appear in more than one agent's output for the same line, (2) assign a unified severity score (CRITICAL / HIGH / MEDIUM / LOW) to every finding, (3) rank findings by severity, (4) produce the final <code>ReviewReport</code> Pydantic model with metadata — total issues count, risk score (0–100), and per-agent summaries.</div>
+  </div>
+
+  <div class="label">LangGraph state definition</div>
+  <div class="card">
+    <pre style="font-family:var(--mono);font-size:12px;color:var(--text);overflow-x:auto;line-height:1.6">class CodeReviewState(TypedDict):
+    code: str
+    filename: str
+    repo_url: Optional[str]
+    bug_results: Optional[BugFinderOutput]
+    security_results: Optional[SecurityOutput]
+    style_results: Optional[StyleOutput]
+    test_results: Optional[TestOutput]
+    final_report: Optional[ReviewReport]</pre>
+  </div>
+
+  <div class="label">Why asyncio.gather matters</div>
+  <div class="alert alert-warn">Each agent call takes ~7–10 seconds. Running sequentially = 28–40 seconds per review. Running with asyncio.gather() = 7–10 seconds total. This single architectural decision is the difference between a demo that impresses and one that times out. Every agent node must be an async function.</div>
+</div>
+
+<!-- ============ REQUEST FLOW ============ -->
+<div class="section" id="s-request-flow">
+  <div class="section-title">Request flow — step by step</div>
+  <div class="section-desc">What happens from the moment a user submits code to the moment the report appears on screen.</div>
+
+  <div class="flow-wrap">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div>
+        <div class="flow-step-title">User submits via Streamlit</div>
+        <div class="flow-step-sub">Pastes code or enters GitHub repo URL. Clicks "Review". Streamlit calls POST /review on the FastAPI backend.</div>
+      </div>
+    </div>
+    <div class="flow-arrow"><i class="ti ti-arrow-down" aria-hidden="true"></i></div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div>
+        <div class="flow-step-title">FastAPI validates input</div>
+        <div class="flow-step-sub">Checks if input is raw code or GitHub URL. Validates URL format. Returns 422 immediately for invalid input. Creates a review_id (UUID).</div>
+      </div>
+    </div>
+    <div class="flow-arrow"><i class="ti ti-arrow-down" aria-hidden="true"></i></div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div>
+        <div class="flow-step-title">GitHub file fetcher (if URL provided)</div>
+        <div class="flow-step-sub">PyGithub pulls all .py files recursively. Handles rate limits with exponential backoff. Skips non-Python files and binary files. Returns list of (filename, code_content) tuples.</div>
+      </div>
+    </div>
+    <div class="flow-arrow"><i class="ti ti-arrow-down" aria-hidden="true"></i></div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div>
+        <div class="flow-step-title">Code chunker</div>
+        <div class="flow-step-sub">Parses code with ast.parse(). Splits by function/class definitions (not by character count). Each chunk stays within token budget (≈3000 tokens). Large functions split at logical boundaries.</div>
+      </div>
+    </div>
+    <div class="flow-arrow"><i class="ti ti-arrow-down" aria-hidden="true"></i></div>
+    <div class="flow-step">
+      <div class="flow-num">5</div>
+      <div>
+        <div class="flow-step-title">LangGraph orchestrator starts</div>
+        <div class="flow-step-sub">Initializes CodeReviewState with code + filename. Orchestrator node logs start time, token budget, and chunk count. Routes to all four agent nodes simultaneously.</div>
+      </div>
+    </div>
+    <div class="flow-arrow"><i class="ti ti-arrow-down" aria-hidden="true"></i></div>
+    <div class="flow-step">
+      <div class="flow-num">6</div>
+      <div>
+        <div class="flow-step-title">Four agents run via asyncio.gather()</div>
+        <div class="flow-step-sub">Bug finder, security, style, and test-gen agents execute in parallel. Each calls LLM with structured output prompt. Each returns a typed Pydantic object. Failed agents return an empty result (not an error).</div>
+      </div>
+    </div>
+    <div class="flow-arrow"><i class="ti ti-arrow-down" aria-hidden="true"></i></div>
+    <div class="flow-step">
+      <div class="flow-num">7</div>
+      <div>
+        <div class="flow-step-title">Assembler agent merges results</div>
+        <div class="flow-step-sub">Deduplicates findings by (line_number, issue_type). Assigns unified severity (CRITICAL/HIGH/MEDIUM/LOW). Computes risk score 0–100. Produces final ReviewReport object.</div>
+      </div>
+    </div>
+    <div class="flow-arrow"><i class="ti ti-arrow-down" aria-hidden="true"></i></div>
+    <div class="flow-step">
+      <div class="flow-num">8</div>
+      <div>
+        <div class="flow-step-title">PostgreSQL storage</div>
+        <div class="flow-step-sub">Stores: review_id, repo_url, filename, created_at, total_issues, risk_score, full report JSON. Async SQLAlchemy session — non-blocking. Review is queryable via GET /reviews.</div>
+      </div>
+    </div>
+    <div class="flow-arrow"><i class="ti ti-arrow-down" aria-hidden="true"></i></div>
+    <div class="flow-step">
+      <div class="flow-num">9</div>
+      <div>
+        <div class="flow-step-title">Response to Streamlit</div>
+        <div class="flow-step-sub">FastAPI returns ReviewReport JSON. Streamlit renders it in 4 tabs (Bugs / Security / Style / Tests). Severity color coded: red = CRITICAL, amber = HIGH, gray = LOW. Download button exports Markdown.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TECH STACK ============ -->
+<div class="section" id="s-techstack">
+  <div class="section-title">Tech stack — Stage 1</div>
+  <div class="section-desc">Every library and tool you will use, why it's there, and which part of the JD it covers.</div>
+
+  <div class="label">Core agent layer (new to learn)</div>
+  <div class="card">
+    <div class="info-row"><div class="info-key">LangChain</div><div class="info-val">LCEL pipe syntax for building chains. ChatPromptTemplate for system/human prompts. with_structured_output() for Pydantic output. Core of every agent.</div></div>
+    <div class="info-row"><div class="info-key">LangGraph</div><div class="info-val">StateGraph for multi-agent orchestration. Nodes = Python async functions. Edges = control flow. Conditional edges = orchestrator routing logic. The backbone of the pipeline.</div></div>
+    <div class="info-row"><div class="info-key">Pydantic v2</div><div class="info-val">BaseModel for typed agent outputs. Eliminates raw text parsing. Every agent returns a structured Pydantic object — not a string.</div></div>
+    <div class="info-row"><div class="info-key">OpenAI GPT-4o-mini</div><div class="info-val">Primary LLM. Cheap (~$0.15/1M tokens) and fast. Sufficient for all four agents. Swappable to Claude/Groq later.</div></div>
+  </div>
+
+  <div class="label">Backend (extend existing knowledge)</div>
+  <div class="card">
+    <div class="info-row"><div class="info-key">FastAPI</div><div class="info-val">You know this already. Need to extend with: async/await, BackgroundTasks, asyncio.gather(), SSE for streaming. POST /review, GET /reviews endpoints.</div></div>
+    <div class="info-row"><div class="info-key">SQLAlchemy (async)</div><div class="info-val">AsyncSession + asyncpg driver. Non-blocking DB writes. You know SQL — SQLAlchemy is just a Python wrapper.</div></div>
+    <div class="info-row"><div class="info-key">asyncpg</div><div class="info-val">Fast async PostgreSQL driver. Used under SQLAlchemy. Install: pip install asyncpg.</div></div>
+    <div class="info-row"><div class="info-key">PyGithub</div><div class="info-val">Fetch all .py files from a GitHub repo URL. repo.get_contents() recursive traversal. Personal access token auth.</div></div>
+  </div>
+
+  <div class="label">Frontend + infra (new, but easy)</div>
+  <div class="card">
+    <div class="info-row"><div class="info-key">Streamlit</div><div class="info-val">4-tab report UI. 1 day to learn. st.tabs(), st.download_button(), st.spinner(), st.sidebar for review history.</div></div>
+    <div class="info-row"><div class="info-key">PostgreSQL</div><div class="info-val">You know SQL. Run locally via Docker. Deploy as Render PostgreSQL service (free tier).</div></div>
+    <div class="info-row"><div class="info-key">Docker + docker-compose</div><div class="info-val">Dockerfile for FastAPI. docker-compose.yml launches app + postgres together locally. One command: docker-compose up.</div></div>
+    <div class="info-row"><div class="info-key">Render</div><div class="info-val">Deployment platform. Free tier. Connect GitHub repo → auto-deploy. Add env vars (OPENAI_API_KEY, DATABASE_URL) in dashboard.</div></div>
+  </div>
+
+  <div class="label">Folder structure</div>
+  <div class="card">
+    <pre style="font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.7">codeguard/
+├── backend/
+│   ├── main.py              # FastAPI app, routes
+│   ├── agents/
+│   │   ├── orchestrator.py  # LangGraph StateGraph
+│   │   ├── bug_finder.py    # Bug agent chain
+│   │   ├── security.py      # Security agent chain
+│   │   ├── style.py         # Style agent chain
+│   │   ├── test_gen.py      # Test gen agent chain
+│   │   └── assembler.py     # Report assembler agent
+│   ├── models/
+│   │   ├── pydantic_schemas.py  # All Pydantic models
+│   │   └── db_models.py         # SQLAlchemy models
+│   ├── services/
+│   │   ├── github_fetcher.py    # PyGithub integration
+│   │   └── chunker.py           # AST-based chunker
+│   ├── database.py          # Async DB session
+│   └── config.py            # Settings, env vars
+├── frontend/
+│   └── app.py               # Streamlit UI
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+└── README.md</pre>
+  </div>
+</div>
+
+<!-- ============ PRE-BUILD ============ -->
+<div class="section" id="s-prebuild">
+  <div class="section-title">Pre-build learning sprint</div>
+  <div class="section-desc">Days 1–10 before writing a single line of project code. These 10 days are mandatory — starting the project without understanding LangGraph state flow will cause you to get stuck and rewrite everything in Week 2.</div>
+
+  <div class="alert alert-warn">Do NOT write project code during these 10 days. Build only the tiny examples from the tutorials. Hands-on > reading.</div>
+
+  <div class="label">Days 1–3 — LangChain LCEL</div>
+  <div class="card">
+    <div class="info-row"><div class="info-key">Goal</div><div class="info-val">Build one chain that takes a code string as input and returns a Pydantic object. Nothing more.</div></div>
+    <div class="info-row"><div class="info-key">Concepts</div><div class="info-val">Pipe syntax (prompt | model | parser), ChatPromptTemplate, with_structured_output(), system + human messages</div></div>
+    <div class="info-row"><div class="info-key">Daily output</div><div class="info-val">Day 1: Run LangChain hello world. Day 2: Build a chain with Pydantic output. Day 3: Add system prompt for code analysis. Test with real code.</div></div>
+  </div>
+
+  <div class="label">Days 4–7 — LangGraph</div>
+  <div class="card">
+    <div class="info-row"><div class="info-key">Goal</div><div class="info-val">Build a 2-node StateGraph that passes state between nodes. Understand state, nodes, edges, conditional edges.</div></div>
+    <div class="info-row"><div class="info-key">Concepts</div><div class="info-val">TypedDict for state, StateGraph, add_node(), add_edge(), compile(), invoke(). Conditional edges for branching.</div></div>
+    <div class="info-row"><div class="info-key">Daily output</div><div class="info-val">Day 4: LangGraph quickstart. Day 5: Build 2-node graph. Day 6: Add conditional edge. Day 7: Build 3-node supervisor + worker pattern.</div></div>
+  </div>
+
+  <div class="label">Days 8–10 — Async Python</div>
+  <div class="card">
+    <div class="info-row"><div class="info-key">Goal</div><div class="info-val">Run two fake async tasks with asyncio.gather() and see the timing difference vs sequential. Apply to FastAPI endpoint.</div></div>
+    <div class="info-row"><div class="info-key">Concepts</div><div class="info-val">async def, await, asyncio.gather(), asyncio.sleep(), async context managers. FastAPI async routes.</div></div>
+    <div class="info-row"><div class="info-key">Daily output</div><div class="info-val">Day 8: Sequential vs gather timing demo. Day 9: Async FastAPI endpoint. Day 10: Combine — async LangChain call inside FastAPI.</div></div>
+  </div>
+
+  <div class="alert alert-success">After 10 days: You can build one chain → wrap in LangGraph node → call it from FastAPI async route. That is 80% of Week 1 already done.</div>
+</div>
+
+<!-- ============ STAGE 1 ============ -->
+<div class="section" id="s-stage1">
+  <div class="section-title">Stage 1 — 6-week build sprint</div>
+  <div class="section-desc">The MVP. Every week has a clear success criteria. Do not move to the next week until the current week's code runs without errors.</div>
+
+  <div class="week-grid">
+    <div class="week-row">
+      <div class="week-lbl">Week<span>1</span></div>
+      <div class="week-body">
+        <div class="week-title">First working agent</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.6">Success criteria: POST /review accepts code, returns BugFinderOutput JSON. Testable in Postman.</div>
+        <div class="week-chips">
+          <span class="tag tag-purple">Project setup + venv</span>
+          <span class="tag tag-purple">BugFinderOutput Pydantic model</span>
+          <span class="tag tag-purple">bug_finder_agent LangChain chain</span>
+          <span class="tag tag-purple">FastAPI POST /review endpoint</span>
+          <span class="tag tag-blue">Test with Postman</span>
+        </div>
+      </div>
+    </div>
+    <div class="week-row">
+      <div class="week-lbl">Week<span>2</span></div>
+      <div class="week-body">
+        <div class="week-title">LangGraph orchestrator + all 4 agents</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.6">Success criteria: All 4 agents run via LangGraph. asyncio.gather() active. Total time under 12s.</div>
+        <div class="week-chips">
+          <span class="tag tag-purple">CodeReviewState TypedDict</span>
+          <span class="tag tag-purple">Security + Style + TestGen agents</span>
+          <span class="tag tag-purple">LangGraph StateGraph wiring</span>
+          <span class="tag tag-purple">asyncio.gather() parallel run</span>
+          <span class="tag tag-blue">Timing test — verify parallel</span>
+        </div>
+      </div>
+    </div>
+    <div class="week-row">
+      <div class="week-lbl">Week<span>3</span></div>
+      <div class="week-body">
+        <div class="week-title">Full async FastAPI + PostgreSQL</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.6">Success criteria: Reviews stored in DB. GET /reviews returns history. All done async. No blocking calls.</div>
+        <div class="week-chips">
+          <span class="tag tag-teal">SQLAlchemy async setup</span>
+          <span class="tag tag-teal">docker-compose app + postgres</span>
+          <span class="tag tag-teal">GitHub file fetcher (PyGithub)</span>
+          <span class="tag tag-teal">AST-based code chunker</span>
+          <span class="tag tag-teal">Retry logic + token logging</span>
+          <span class="tag tag-teal">GET /reviews history endpoint</span>
+        </div>
+      </div>
+    </div>
+    <div class="week-row">
+      <div class="week-lbl">Week<span>4</span></div>
+      <div class="week-body">
+        <div class="week-title">Streamlit UI</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.6">Success criteria: Full UI working — submit code, see 4-tab report, view history in sidebar.</div>
+        <div class="week-chips">
+          <span class="tag tag-amber">Streamlit basic layout</span>
+          <span class="tag tag-amber">4-tab report (Bugs/Security/Style/Tests)</span>
+          <span class="tag tag-amber">GitHub URL input mode</span>
+          <span class="tag tag-amber">Review history sidebar</span>
+          <span class="tag tag-amber">Severity color coding</span>
+        </div>
+      </div>
+    </div>
+    <div class="week-row">
+      <div class="week-lbl">Week<span>5</span></div>
+      <div class="week-body">
+        <div class="week-title">Assembler + polish + error handling</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.6">Success criteria: Clean deduplication. Risk score shown. Markdown report downloadable. No crashes on edge cases.</div>
+        <div class="week-chips">
+          <span class="tag tag-coral">Assembler deduplication logic</span>
+          <span class="tag tag-coral">Severity scoring algorithm</span>
+          <span class="tag tag-coral">Markdown report generator</span>
+          <span class="tag tag-coral">Global error handling FastAPI</span>
+          <span class="tag tag-coral">Test on 3 real GitHub repos</span>
+          <span class="tag tag-coral">Download report button</span>
+        </div>
+      </div>
+    </div>
+    <div class="week-row">
+      <div class="week-lbl">Week<span>6</span></div>
+      <div class="week-body">
+        <div class="week-title">Docker + Deploy + Documentation</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.6">Success criteria: Live URL on Render. README with architecture diagram + demo GIF. Never skip this week.</div>
+        <div class="week-chips">
+          <span class="tag tag-green">Dockerfile for FastAPI</span>
+          <span class="tag tag-green">docker-compose local dev</span>
+          <span class="tag tag-green">Deploy to Render</span>
+          <span class="tag tag-green">README + architecture diagram</span>
+          <span class="tag tag-green">Demo GIF (Loom → Ezgif)</span>
+          <span class="tag tag-green">Buffer day — fix Render issues</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-warn" style="margin-top:20px">Never skip Week 6. An undeployed project does not exist on a resume. A finished 7/10 is worth 10× an unfinished 9/10.</div>
+</div>
+
+<!-- ============ STAGE 2 ============ -->
+<div class="section" id="s-stage2">
+  <div class="section-title">Stage 2 — Technical depth</div>
+  <div class="section-desc">Only start these after Stage 1 is deployed with a live URL. These upgrades take the project from 7.5/10 to 8.5/10 by adding real engineering underneath the LLM layer.</div>
+
+  <div class="alert alert-info">Do not touch Stage 2 until your live Render URL works and you have a demo GIF in your README. Every hour on Stage 2 before that is wasted.</div>
+
+  <div class="label">A — AST-based bug detection</div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-trees" aria-hidden="true"></i>Python AST pre-analysis</div>
+    <div class="card-sub" style="margin-top:8px">Before sending code to the bug finder LLM, parse it with Python's built-in <code>ast</code> module. Extract: all function names + args, return types, exception handlers, unused variables, unreachable code. Pass this structured metadata to the LLM as context. Now the LLM has structural facts, not just raw text. This is the difference between "prompting" and "hybrid analysis".</div>
+    <div class="chip-row"><span class="chip">ast.parse()</span><span class="chip">ast.walk()</span><span class="chip">ast.FunctionDef</span><span class="chip">LibCST (optional)</span><span class="chip">Tree-sitter (multi-lang)</span></div>
+  </div>
+
+  <div class="label">B — Static analysis integration</div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-analyze" aria-hidden="true"></i>Bandit + Semgrep as pre-processors</div>
+    <div class="card-sub" style="margin-top:8px">Run Bandit (security linter) and optionally Semgrep via <code>subprocess</code> before the security agent LLM call. Parse their JSON output. Feed structured findings into the security agent as context. The LLM then reasons about real, confirmed findings — not guessing. This is hybrid static + LLM analysis. This one change alone is what makes it "real engineering" vs "prompt engineering".</div>
+    <div class="chip-row"><span class="chip">bandit -r . -f json</span><span class="chip">semgrep --json</span><span class="chip">subprocess.run()</span><span class="chip">pylint (style)</span><span class="chip">mypy (type check)</span></div>
+  </div>
+
+  <div class="label">C — Semantic code chunking</div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-cut" aria-hidden="true"></i>Split by function boundary, not character count</div>
+    <div class="card-sub" style="margin-top:8px">Upgrade the chunker to use <code>ast.parse()</code> to find all function and class definitions. Each chunk = one function or class. Preserves context that character-count chunking destroys. Also adds a class-level context header to each chunk so the LLM knows what module it's looking at.</div>
+  </div>
+
+  <div class="label">D — Repo memory with Mem0</div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-brain" aria-hidden="true"></i>Track patterns across reviews</div>
+    <div class="card-sub" style="margin-top:8px">Add Mem0 (open-source memory library) to track repeated issues per repository. After each review, store findings in Mem0 keyed by repo_url. Before the next review of the same repo, retrieve past findings and pass as context. Agents now know "this repo has had SQL injection issues in auth module 3 times" — that is real contextual intelligence.</div>
+    <div class="chip-row"><span class="chip">mem0ai</span><span class="chip">per-repo memory namespace</span><span class="chip">recurring issue tracking</span></div>
+  </div>
+</div>
+
+<!-- ============ STAGE 3 ============ -->
+<div class="section" id="s-stage3">
+  <div class="section-title">Stage 3 — Serious engineering</div>
+  <div class="section-desc">Long-term upgrades. Do not start until Stage 2 is complete. These take the project to 9/10 territory and make it industry-level.</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-refresh" aria-hidden="true"></i>Autonomous fix loop</div>
+      <div class="card-sub" style="margin-top:6px">Detect bug → generate patch → apply to temp file → run pytest → if pass: commit suggestion. If fail: retry with error context (max 2 retries). This is what "agentic" really means — not just detection but action.</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-brand-github" aria-hidden="true"></i>GitHub PR auto-review</div>
+      <div class="card-sub" style="margin-top:6px">GitHub webhook triggers on pull_request event. Your backend receives the diff. Agents review only the changed files. Post findings as PR review comments via GitHub API. This is what CodeRabbit and GitHub Copilot do.</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-box" aria-hidden="true"></i>Execution sandbox</div>
+      <div class="card-sub" style="margin-top:6px">Run generated test cases in a Docker container with a timeout. Parse pytest output. Verify that generated tests actually pass. Gives a "test validity" signal alongside test suggestions.</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-git-branch" aria-hidden="true"></i>Dependency graph reasoning</div>
+      <div class="card-sub" style="margin-top:6px">Build import graph of the repo. Identify which modules depend on each other. Pass dependency context to agents. A bug in a utility function now triggers review of all files that import it.</div>
+    </div>
+  </div>
+
+  <div class="alert alert-info" style="margin-top:16px">Stage 3 is ambitious. Even implementing one of these (the autonomous fix loop is most impressive) takes CodeGuard to a level very few student projects reach. Prioritize Stage 1 and Stage 2 first.</div>
+</div>
+
+<!-- ============ RESOURCES ============ -->
+<div class="section" id="s-resources">
+  <div class="section-title">Learning resources</div>
+  <div class="section-desc">Curated by phase. Every link is free. Study in order.</div>
+
+  <div class="inner-tabs">
+    <div class="inner-tab active" onclick="switchInner('res',0,this)">Phase 1 — LangChain</div>
+    <div class="inner-tab" onclick="switchInner('res',1,this)">Phase 2 — LangGraph</div>
+    <div class="inner-tab" onclick="switchInner('res',2,this)">Phase 3 — Backend</div>
+    <div class="inner-tab" onclick="switchInner('res',3,this)">Phase 4 — Deploy</div>
+    <div class="inner-tab" onclick="switchInner('res',4,this)">Stage 2+</div>
+  </div>
+
+  <div class="inner-pane active" id="res-0">
+    <div class="res-item"><i class="ti ti-brand-youtube res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">LangChain crash course — Greg Kamradt</div><div class="res-desc">Best intro to LCEL. Watch only the pipe syntax + ChatPromptTemplate section. Skip old stuff.</div><a class="res-link" href="https://www.youtube.com/watch?v=_v_fgW2SkkQ" target="_blank">youtube.com — search "LangChain Greg Kamradt LCEL"</a></div><span class="res-tag tag-yt">YouTube</span></div>
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">LangChain LCEL official docs</div><div class="res-desc">Read: "Get started", "Runnable interface", "ChatPromptTemplate". Skip everything else.</div><a class="res-link" href="https://python.langchain.com/docs/expression_language/" target="_blank">python.langchain.com/docs/expression_language</a></div><span class="res-tag tag-docs">Docs</span></div>
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">with_structured_output() — LangChain docs</div><div class="res-desc">The most critical feature for this project. Makes LLM return Pydantic objects directly.</div><a class="res-link" href="https://python.langchain.com/docs/how_to/structured_output/" target="_blank">python.langchain.com/docs/how_to/structured_output</a></div><span class="res-tag tag-docs">Docs</span></div>
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">Pydantic v2 — Models</div><div class="res-desc">Read only "Models" section. Build one: Issue(title, severity, line_number, suggestion). That's all you need now.</div><a class="res-link" href="https://docs.pydantic.dev/latest/concepts/models/" target="_blank">docs.pydantic.dev/latest/concepts/models</a></div><span class="res-tag tag-docs">Docs</span></div>
+  </div>
+
+  <div class="inner-pane" id="res-1">
+    <div class="res-item"><i class="ti ti-brand-youtube res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">LangGraph quickstart — official YouTube</div><div class="res-desc">Focus on: StateGraph, nodes, edges, conditional edges. These 4 concepts are the entire backbone.</div><a class="res-link" href="https://www.youtube.com/@LangChain" target="_blank">youtube.com/@LangChain — search "LangGraph quickstart"</a></div><span class="res-tag tag-yt">YouTube</span></div>
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">LangGraph official quickstart</div><div class="res-desc">Do the hands-on. Build their example first, then modify it. Understanding state flow is everything.</div><a class="res-link" href="https://langchain-ai.github.io/langgraph/tutorials/introduction/" target="_blank">langchain-ai.github.io/langgraph/tutorials/introduction</a></div><span class="res-tag tag-docs">Docs</span></div>
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">LangGraph multi-agent supervisor tutorial</div><div class="res-desc">This is EXACTLY your architecture. Supervisor + worker pattern. Read and rewrite yourself — don't copy-paste.</div><a class="res-link" href="https://langchain-ai.github.io/langgraph/tutorials/multi_agent/agent_supervisor/" target="_blank">langchain-ai.github.io/langgraph/tutorials/multi_agent/agent_supervisor</a></div><span class="res-tag tag-docs">Docs</span></div>
+    <div class="res-item"><i class="ti ti-brand-github res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">LangGraph examples repo</div><div class="res-desc">Find multi_agent folder. Read supervisor example. Read — don't copy-paste.</div><a class="res-link" href="https://github.com/langchain-ai/langgraph/tree/main/examples" target="_blank">github.com/langchain-ai/langgraph/tree/main/examples</a></div><span class="res-tag tag-free">Free</span></div>
+  </div>
+
+  <div class="inner-pane" id="res-2">
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">FastAPI async docs</div><div class="res-desc">Read "Concurrency and async/await" + "Background Tasks". That's all you need for the backend.</div><a class="res-link" href="https://fastapi.tiangolo.com/async/" target="_blank">fastapi.tiangolo.com/async</a></div><span class="res-tag tag-docs">Docs</span></div>
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">SQLAlchemy async — official docs</div><div class="res-desc">Read "Asyncio" section. Use async_sessionmaker. Sync SQLAlchemy will block your FastAPI event loop.</div><a class="res-link" href="https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html" target="_blank">docs.sqlalchemy.org/en/20/orm/extensions/asyncio</a></div><span class="res-tag tag-docs">Docs</span></div>
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">PyGithub — Repository contents</div><div class="res-desc">Read "Repository contents" section. Use repo.get_contents() recursively. Filter .py files only.</div><a class="res-link" href="https://pygithub.readthedocs.io/en/stable/examples/Repository.html" target="_blank">pygithub.readthedocs.io/en/stable/examples/Repository</a></div><span class="res-tag tag-docs">Docs</span></div>
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">Streamlit main concepts</div><div class="res-desc">Read "Main concepts" and "API reference" only. 1 day to be productive.</div><a class="res-link" href="https://docs.streamlit.io/get-started/fundamentals/main-concepts" target="_blank">docs.streamlit.io/get-started/fundamentals/main-concepts</a></div><span class="res-tag tag-docs">Docs</span></div>
+    <div class="res-item"><i class="ti ti-brand-github res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">FastAPI best practices</div><div class="res-desc">Read before Week 5. Covers project structure, error handling, env vars, logging. Makes code look professional.</div><a class="res-link" href="https://github.com/zhanymkanov/fastapi-best-practices" target="_blank">github.com/zhanymkanov/fastapi-best-practices</a></div><span class="res-tag tag-free">Free</span></div>
+  </div>
+
+  <div class="inner-pane" id="res-3">
+    <div class="res-item"><i class="ti ti-brand-youtube res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">Docker for beginners — TechWorld with Nana</div><div class="res-desc">Watch until docker-compose section only. That's all you need for this project.</div><a class="res-link" href="https://www.youtube.com/@TechWorldwithNana" target="_blank">youtube.com/@TechWorldwithNana — search "Docker tutorial beginners"</a></div><span class="res-tag tag-yt">YouTube</span></div>
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">Render — Deploy FastAPI</div><div class="res-desc">Follow "Deploy a FastAPI app" guide exactly. Free tier. Add PostgreSQL as separate Render service.</div><a class="res-link" href="https://render.com/docs/deploy-fastapi" target="_blank">render.com/docs/deploy-fastapi</a></div><span class="res-tag tag-docs">Docs</span></div>
+  </div>
+
+  <div class="inner-pane" id="res-4">
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">Python AST module — realpython.com</div><div class="res-desc">Best deep dive on using AST for code analysis. Learn to walk the tree, find function calls, detect patterns.</div><a class="res-link" href="https://realpython.com/python-ast/" target="_blank">realpython.com/python-ast</a></div><span class="res-tag tag-free">Free</span></div>
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">Bandit docs</div><div class="res-desc">Python security linter. Run via subprocess in JSON mode. Feed output to security agent as context.</div><a class="res-link" href="https://bandit.readthedocs.io/en/latest/" target="_blank">bandit.readthedocs.io</a></div><span class="res-tag tag-free">Free</span></div>
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">Semgrep docs</div><div class="res-desc">Semantic grep for code patterns. The hybrid static + LLM combo that jumps you from 7 to 8.5.</div><a class="res-link" href="https://semgrep.dev/docs/" target="_blank">semgrep.dev/docs</a></div><span class="res-tag tag-free">Free</span></div>
+    <div class="res-item"><i class="ti ti-file-text res-icon" aria-hidden="true"></i><div class="res-body"><div class="res-name">Mem0 — agent memory</div><div class="res-desc">Add per-repo memory. Agents remember repeated issues across reviews. docs.mem0.ai</div><a class="res-link" href="https://docs.mem0.ai/overview" target="_blank">docs.mem0.ai/overview</a></div><span class="res-tag tag-free">Free</span></div>
+  </div>
+</div>
+
+<!-- ============ CHECKPOINTS ============ -->
+<div class="section" id="s-checkpoints">
+  <div class="section-title">Project checkpoints</div>
+  <div class="section-desc">Mark every task as done. Progress syncs to the sidebar. Do not skip — every sub-point matters.</div>
+
+  <div id="checklist-container"></div>
+</div>
+
+</main>
+
+
+<script>
+const sections={overview:'s-overview',architecture:'s-architecture',pipeline:'s-pipeline','request-flow':'s-request-flow',techstack:'s-techstack',prebuild:'s-prebuild',stage1:'s-stage1',stage2:'s-stage2',stage3:'s-stage3',resources:'s-resources',checkpoints:'s-checkpoints'};
+let checks={};
+
+function goto(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const sec=document.getElementById(sections[id]);
+  if(sec)sec.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active')});
+  document.getElementById('main').scrollTo(0,0);
+}
+
+function switchInner(prefix,idx,el){
+  const wrap=el.closest('.section');
+  wrap.querySelectorAll('.inner-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  wrap.querySelectorAll('.inner-pane').forEach((p,i)=>p.classList.toggle('active',i===idx));
+}
+
+const checkData=[
+  {id:'pre',title:'Pre-build learning (Days 1–10)',color:'purple',items:[
+    {id:'p1',text:'Day 1: Run LangChain hello world (pip install langchain openai)',sub:[]},
+    {id:'p2',text:'Day 2: Build a chain with Pydantic output using with_structured_output()',sub:[
+      {id:'p2a',text:'Create Issue Pydantic model: title, severity, line_number, suggestion'},
+      {id:'p2b',text:'Verify LLM returns structured object, not raw text'},
+    ]},
+    {id:'p3',text:'Day 3: System prompt for code analysis — test with real Python snippet',sub:[]},
+    {id:'p4',text:'Day 4: LangGraph quickstart — build the example from docs',sub:[]},
+    {id:'p5',text:'Day 5: Build 2-node StateGraph with shared state',sub:[
+      {id:'p5a',text:'Define CodeReviewState TypedDict'},
+      {id:'p5b',text:'Node 1 writes to state, Node 2 reads from it'},
+    ]},
+    {id:'p6',text:'Day 6: Add conditional edge to 2-node graph',sub:[]},
+    {id:'p7',text:'Day 7: Build 3-node supervisor + worker graph',sub:[
+      {id:'p7a',text:'Supervisor node decides which worker to call'},
+      {id:'p7b',text:'Two worker nodes each return different results'},
+    ]},
+    {id:'p8',text:'Day 8: asyncio sequential vs gather() timing demo',sub:[
+      {id:'p8a',text:'Two fake async tasks — run sequential, measure time'},
+      {id:'p8b',text:'Run same tasks with asyncio.gather(), compare time'},
+    ]},
+    {id:'p9',text:'Day 9: Async FastAPI endpoint — async def + await',sub:[]},
+    {id:'p10',text:'Day 10: Async LangChain call inside FastAPI route end-to-end',sub:[]},
+  ]},
+  {id:'w1',title:'Week 1 — First working agent',color:'blue',items:[
+    {id:'w1_1',text:'Initialize project: folder structure + venv + requirements.txt',sub:[
+      {id:'w1_1a',text:'Install: langchain langgraph openai fastapi uvicorn pydantic'},
+      {id:'w1_1b',text:'.env file: OPENAI_API_KEY (never hardcode)'},
+      {id:'w1_1c',text:'config.py: load env vars with python-dotenv'},
+    ]},
+    {id:'w1_2',text:'Create BugFinderOutput and Issue Pydantic models',sub:[
+      {id:'w1_2a',text:'Issue: title:str, severity:Literal["CRITICAL","HIGH","MEDIUM","LOW"], line_number:int, suggestion:str'},
+      {id:'w1_2b',text:'BugFinderOutput: issues:List[Issue], summary:str'},
+    ]},
+    {id:'w1_3',text:'Build bug_finder_agent as LangChain chain',sub:[
+      {id:'w1_3a',text:'ChatPromptTemplate with system prompt (senior Python engineer role)'},
+      {id:'w1_3b',text:'model.with_structured_output(BugFinderOutput)'},
+      {id:'w1_3c',text:'LCEL pipe: prompt | model'},
+    ]},
+    {id:'w1_4',text:'FastAPI POST /review endpoint',sub:[
+      {id:'w1_4a',text:'Input: ReviewRequest(code:str, filename:str)'},
+      {id:'w1_4b',text:'Call bug_finder_agent.ainvoke({code, filename})'},
+      {id:'w1_4c',text:'Return BugFinderOutput as JSON response'},
+    ]},
+    {id:'w1_5',text:'Test with Postman — POST real Python code, verify JSON output',sub:[]},
+  ]},
+  {id:'w2',title:'Week 2 — LangGraph + all 4 agents',color:'blue',items:[
+    {id:'w2_1',text:'Define CodeReviewState TypedDict with all fields',sub:[
+      {id:'w2_1a',text:'Fields: code, filename, repo_url, bug_results, security_results, style_results, test_results, final_report'},
+    ]},
+    {id:'w2_2',text:'Build SecurityAgent with SecurityOutput Pydantic model',sub:[
+      {id:'w2_2a',text:'Vulnerability: type, severity, line_number, cwe_id (optional), fix'},
+      {id:'w2_2b',text:'SecurityOutput: vulnerabilities:List[Vulnerability]'},
+    ]},
+    {id:'w2_3',text:'Build StyleAgent with StyleOutput Pydantic model',sub:[
+      {id:'w2_3a',text:'StyleIssue: rule, message, line_number, fix_example'},
+    ]},
+    {id:'w2_4',text:'Build TestGenAgent with TestOutput Pydantic model',sub:[
+      {id:'w2_4a',text:'TestCase: function_name, test_code (runnable pytest), edge_cases:List[str]'},
+    ]},
+    {id:'w2_5',text:'Wire all agents into LangGraph StateGraph',sub:[
+      {id:'w2_5a',text:'orchestrator_node: validates input, logs start'},
+      {id:'w2_5b',text:'Four agent nodes: each updates state with their result'},
+      {id:'w2_5c',text:'Edges: orchestrator → all agents → assembler (placeholder for now)'},
+    ]},
+    {id:'w2_6',text:'Run all 4 agents with asyncio.gather() inside FastAPI',sub:[
+      {id:'w2_6a',text:'Time sequential vs parallel — verify under 12s total'},
+    ]},
+  ]},
+  {id:'w3',title:'Week 3 — Backend + PostgreSQL',color:'teal',items:[
+    {id:'w3_1',text:'SQLAlchemy async setup',sub:[
+      {id:'w3_1a',text:'Install: sqlalchemy asyncpg alembic'},
+      {id:'w3_1b',text:'database.py: async_sessionmaker, get_async_session()'},
+      {id:'w3_1c',text:'Review model: id, repo_url, filename, created_at, risk_score, report_json'},
+    ]},
+    {id:'w3_2',text:'docker-compose.yml — app + postgres together',sub:[
+      {id:'w3_2a',text:'postgres service: image postgres:15, env vars, volume'},
+      {id:'w3_2b',text:'app service: build from Dockerfile, depends_on postgres'},
+      {id:'w3_2c',text:'Test: docker-compose up — both start without errors'},
+    ]},
+    {id:'w3_3',text:'GitHub file fetcher',sub:[
+      {id:'w3_3a',text:'Install: pygithub'},
+      {id:'w3_3b',text:'Parse GitHub URL → extract owner/repo'},
+      {id:'w3_3c',text:'Recursive get_contents() → filter .py files'},
+      {id:'w3_3d',text:'Handle RateLimitExceededException with backoff'},
+    ]},
+    {id:'w3_4',text:'Code chunker using ast.parse()',sub:[
+      {id:'w3_4a',text:'Parse code → walk AST for FunctionDef nodes'},
+      {id:'w3_4b',text:'Each function becomes a separate chunk'},
+      {id:'w3_4c',text:'Add module-level context header to each chunk'},
+    ]},
+    {id:'w3_5',text:'Retry logic + token logging',sub:[
+      {id:'w3_5a',text:'Retry each agent call once on failure (tenacity library)'},
+      {id:'w3_5b',text:'Log: agent name, prompt_tokens, completion_tokens per call'},
+    ]},
+    {id:'w3_6',text:'GET /reviews endpoint — return paginated review history',sub:[]},
+  ]},
+  {id:'w4',title:'Week 4 — Streamlit UI',color:'amber',items:[
+    {id:'w4_1',text:'Basic Streamlit layout',sub:[
+      {id:'w4_1a',text:'Page title, description, mode selector (paste code vs GitHub URL)'},
+      {id:'w4_1b',text:'st.text_area for code paste, st.text_input for GitHub URL'},
+      {id:'w4_1c',text:'st.button("Review") — calls FastAPI backend'},
+    ]},
+    {id:'w4_2',text:'4-tab report display',sub:[
+      {id:'w4_2a',text:'st.tabs(["🐛 Bugs", "🔒 Security", "✨ Style", "🧪 Tests"])'},
+      {id:'w4_2b',text:'Each tab renders its agent result'},
+      {id:'w4_2c',text:'Severity color coding: 🔴 CRITICAL, 🟠 HIGH, 🟡 MEDIUM, ⚪ LOW'},
+    ]},
+    {id:'w4_3',text:'Review history sidebar',sub:[
+      {id:'w4_3a',text:'st.sidebar: list past reviews from GET /reviews'},
+      {id:'w4_3b',text:'Click past review → loads its report into main area'},
+    ]},
+    {id:'w4_4',text:'Risk score display — prominent metric at top',sub:[]},
+    {id:'w4_5',text:'st.spinner() while review is processing',sub:[]},
+  ]},
+  {id:'w5',title:'Week 5 — Assembler + Polish',color:'coral',items:[
+    {id:'w5_1',text:'Assembler agent',sub:[
+      {id:'w5_1a',text:'Input: all 4 Pydantic outputs'},
+      {id:'w5_1b',text:'Deduplicate: merge findings at same line_number + same severity'},
+      {id:'w5_1c',text:'Compute risk score 0–100: (CRITICAL×20 + HIGH×10 + MEDIUM×3 + LOW×1)'},
+      {id:'w5_1d',text:'Output: ReviewReport Pydantic model'},
+    ]},
+    {id:'w5_2',text:'Markdown report generator',sub:[
+      {id:'w5_2a',text:'Convert ReviewReport → clean Markdown string'},
+      {id:'w5_2b',text:'Sections: Overview, Bugs, Security, Style, Test suggestions'},
+      {id:'w5_2c',text:'st.download_button — download as .md file'},
+    ]},
+    {id:'w5_3',text:'Global error handling in FastAPI',sub:[
+      {id:'w5_3a',text:'@app.exception_handler for HTTPException'},
+      {id:'w5_3b',text:'LLM timeout fallback — return partial results, not 500'},
+      {id:'w5_3c',text:'Empty repo guard — return 400 if no .py files found'},
+    ]},
+    {id:'w5_4',text:'Test on 3 real public GitHub repos',sub:[
+      {id:'w5_4a',text:'Find repos with known issues on GitHub'},
+      {id:'w5_4b',text:'Verify agents catch real bugs'},
+      {id:'w5_4c',text:'Fix any crash cases found during testing'},
+    ]},
+    {id:'w5_5',text:'Token cost logging — log total cost per review',sub:[]},
+  ]},
+  {id:'w6',title:'Week 6 — Docker + Deploy',color:'green',items:[
+    {id:'w6_1',text:'Dockerfile for FastAPI',sub:[
+      {id:'w6_1a',text:'Base: python:3.11-slim'},
+      {id:'w6_1b',text:'COPY requirements.txt → pip install → COPY . → CMD uvicorn'},
+      {id:'w6_1c',text:'Build and run locally — verify it works in container'},
+    ]},
+    {id:'w6_2',text:'docker-compose.yml finalized for local dev',sub:[
+      {id:'w6_2a',text:'One command: docker-compose up — app + postgres start'},
+      {id:'w6_2b',text:'Volume for postgres data persistence'},
+    ]},
+    {id:'w6_3',text:'Deploy FastAPI to Render',sub:[
+      {id:'w6_3a',text:'Connect GitHub repo to Render'},
+      {id:'w6_3b',text:'Set env vars: OPENAI_API_KEY, DATABASE_URL'},
+      {id:'w6_3c',text:'Add PostgreSQL as Render database service'},
+      {id:'w6_3d',text:'Verify live URL returns 200 on GET /health'},
+    ]},
+    {id:'w6_4',text:'README — professional documentation',sub:[
+      {id:'w6_4a',text:'Project title + one-line description'},
+      {id:'w6_4b',text:'Architecture diagram (can use the SVG from this doc)'},
+      {id:'w6_4c',text:'Tech stack badges'},
+      {id:'w6_4d',text:'Setup and run instructions (local + Docker)'},
+      {id:'w6_4e',text:'Demo GIF: record with Loom → convert with Ezgif'},
+      {id:'w6_4f',text:'Live URL link'},
+    ]},
+    {id:'w6_5',text:'Buffer day — fix whatever broke on Render',sub:[
+      {id:'w6_5a',text:'Something always breaks. Keep this day free.'},
+    ]},
+  ]},
+  {id:'s2',title:'Stage 2 — Technical depth (after Stage 1 ships)',color:'amber',items:[
+    {id:'s2_1',text:'AST-based bug pre-analysis',sub:[
+      {id:'s2_1a',text:'ast.parse() → ast.walk() → extract FunctionDef metadata'},
+      {id:'s2_1b',text:'Pass structured AST summary to bug finder as context'},
+    ]},
+    {id:'s2_2',text:'Bandit integration in security agent',sub:[
+      {id:'s2_2a',text:'subprocess.run(["bandit", "-r", path, "-f", "json"])'},
+      {id:'s2_2b',text:'Parse JSON output → pass as context to security LLM'},
+    ]},
+    {id:'s2_3',text:'Semgrep integration (optional but impressive)',sub:[]},
+    {id:'s2_4',text:'Semantic chunking — split by function/class boundary',sub:[]},
+    {id:'s2_5',text:'Mem0 repo memory — track repeated issues across reviews',sub:[
+      {id:'s2_5a',text:'Install mem0ai, initialize with repo_url as user_id'},
+      {id:'s2_5b',text:'Store findings after each review'},
+      {id:'s2_5c',text:'Retrieve past findings before each new review of same repo'},
+    ]},
+  ]},
+  {id:'s3',title:'Stage 3 — Advanced (long-term)',color:'green',items:[
+    {id:'s3_1',text:'GitHub webhook — trigger review on PR events',sub:[
+      {id:'s3_1a',text:'Register webhook on repo: pull_request event'},
+      {id:'s3_1b',text:'Verify signature, extract diff, run agents on changed files only'},
+      {id:'s3_1c',text:'Post findings as PR review comments via GitHub API'},
+    ]},
+    {id:'s3_2',text:'Autonomous fix loop',sub:[
+      {id:'s3_2a',text:'Generate patch for each bug finding'},
+      {id:'s3_2b',text:'Apply patch to temp copy of file'},
+      {id:'s3_2c',text:'Run pytest in subprocess — check result'},
+      {id:'s3_2d',text:'Retry with error context if tests fail (max 2 retries)'},
+    ]},
+    {id:'s3_3',text:'Execution sandbox with Docker',sub:[]},
+    {id:'s3_4',text:'Dependency graph reasoning — import analysis',sub:[]},
+  ]},
+];
+
+const colorMap={purple:'tag-purple',blue:'tag-blue',teal:'tag-teal',amber:'tag-amber',coral:'tag-coral',green:'tag-green'};
+
+function buildChecklist(){
+  const container=document.getElementById('checklist-container');
+  checkData.forEach(section=>{
+    const div=document.createElement('div');
+    div.className='check-section';
+    div.id='cs-'+section.id;
+
+    const allIds=getAllIds(section);
+    const done=allIds.filter(id=>checks[id]).length;
+    const total=allIds.length;
+
+    div.innerHTML=`<div class="check-section-title" onclick="toggleSection('${section.id}')">
+      <div class="cs-left"><i class="ti ti-${done===total&&total>0?'check':'clock'}" aria-hidden="true"></i>${section.title}</div>
+      <span class="check-progress" id="prog-${section.id}">${done}/${total}</span>
+    </div>
+    <div class="check-items" id="ci-${section.id}">
+      ${section.items.map(item=>buildItem(item)).join('')}
+    </div>`;
+    container.appendChild(div);
+  });
+  updateProgress();
+}
+
+function getAllIds(section){
+  let ids=[];
+  section.items.forEach(item=>{
+    ids.push(item.id);
+    item.sub.forEach(s=>ids.push(s.id));
+  });
+  return ids;
+}
+
+function buildItem(item){
+  const sub=item.sub.map(s=>`<label class="check-item sub ${checks[s.id]?'done':''}" id="ci-${s.id}">
+    <input type="checkbox" ${checks[s.id]?'checked':''} onchange="toggle('${s.id}',this)"/>
+    <span class="check-item-text">${s.text}</span>
+  </label>`).join('');
+  return `<label class="check-item ${checks[item.id]?'done':''}" id="ci-${item.id}">
+    <input type="checkbox" ${checks[item.id]?'checked':''} onchange="toggle('${item.id}',this)"/>
+    <span class="check-item-text">${item.text}</span>
+  </label>${sub}`;
+}
+
+function toggle(id,el){
+  checks[id]=el.checked;
+  const label=document.getElementById('ci-'+id);
+  if(label)label.classList.toggle('done',el.checked);
+  updateProgress();
+  updateSectionProgress();
+}
+
+function toggleSection(id){
+  const items=document.getElementById('ci-'+id);
+  if(items)items.style.display=items.style.display==='none'?'block':'none';
+}
+
+function updateSectionProgress(){
+  checkData.forEach(section=>{
+    const allIds=getAllIds(section);
+    const done=allIds.filter(id=>checks[id]).length;
+    const total=allIds.length;
+    const el=document.getElementById('prog-'+section.id);
+    if(el)el.textContent=done+'/'+total;
+    const titleEl=document.querySelector('#cs-'+section.id+' .check-section-title .ti');
+    if(titleEl){
+      titleEl.className='ti ti-'+(done===total&&total>0?'check':'clock');
+    }
+  });
+}
+
+function updateProgress(){
+  let totalAll=0,doneAll=0;
+  checkData.forEach(section=>{
+    const allIds=getAllIds(section);
+    totalAll+=allIds.length;
+    doneAll+=allIds.filter(id=>checks[id]).length;
+  });
+  const pct=totalAll>0?Math.round(doneAll/totalAll*100):0;
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-fill').style.width=pct+'%';
+}
+
+function switchInner(prefix,idx,el){
+  const wrap=el.closest('.section');
+  wrap.querySelectorAll('.inner-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const panes=wrap.querySelectorAll('.inner-pane');
+  panes.forEach((p,i)=>p.classList.toggle('active',i===idx));
+}
+
+buildChecklist();
+</script>
+
+<!-- ========================= -->
+<!-- CHATBOT — ONLY THIS SECTION IS CHANGED -->
+<!-- ========================= -->
+
+<!-- Floating Mentor Button -->
+<button id="mentor-toggle" aria-label="Open CodeGuard Mentor">
+  <span class="mentor-toggle-inner">
+    <i class="ti ti-sparkles"></i>
+    <span class="mentor-toggle-label">Ask Mentor</span>
+  </span>
+  <span class="mentor-toggle-ping"></span>
+</button>
+
+<!-- Mentor Panel -->
+<div id="mentor-panel" role="dialog" aria-label="CodeGuard Mentor Chat">
+
+  <!-- Header -->
+  <div class="mentor-header">
+    <div class="mentor-header-left">
+      <div class="mentor-avatar">
+        <i class="ti ti-robot"></i>
+      </div>
+      <div>
+        <div class="mentor-title">CodeGuard Mentor</div>
+        <div class="mentor-status"><span class="mentor-online-dot"></span>AI-powered · always available</div>
+      </div>
+    </div>
+    <div class="mentor-header-actions">
+      <button id="mentor-clear" title="Clear chat" aria-label="Clear chat">
+        <i class="ti ti-trash"></i>
+      </button>
+      <button id="mentor-close" aria-label="Close mentor">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Context pill -->
+  <div class="mentor-context-bar">
+    <i class="ti ti-map-pin"></i>
+    <span id="mentor-context">Overview</span>
+  </div>
+
+  <!-- Chat body -->
+  <div id="mentor-messages">
+    <div class="mentor-date-divider">Start of conversation</div>
+    <div class="mentor-ai-msg">
+      <div class="mentor-msg-avatar"><i class="ti ti-robot"></i></div>
+      <div class="mentor-msg-bubble">
+        <p>Hey! I'm your CodeGuard engineering mentor. I know this project inside-out.</p>
+        <p>Ask me anything about:</p>
+        <ul>
+          <li><strong>LangGraph</strong> — state, nodes, edges, orchestration</li>
+          <li><strong>FastAPI</strong> — async routes, background tasks</li>
+          <li><strong>asyncio</strong> — gather, event loops, concurrency</li>
+          <li><strong>Architecture</strong> — design decisions, tradeoffs</li>
+          <li><strong>Deployment</strong> — Docker, Render, env vars</li>
+          <li><strong>Debugging</strong> — common errors and fixes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick prompts -->
+  <div class="mentor-quick-wrap">
+    <div class="mentor-quick-label">Quick questions</div>
+    <div class="mentor-quick-chips">
+      <button class="mentor-chip" onclick="quickAsk('Explain asyncio.gather() and why it matters here')"><i class="ti ti-bolt"></i>asyncio.gather()</button>
+      <button class="mentor-chip" onclick="quickAsk('How do I start Week 1 step by step?')"><i class="ti ti-player-play"></i>Start Week 1</button>
+      <button class="mentor-chip" onclick="quickAsk('Explain LangGraph StateGraph orchestration')"><i class="ti ti-topology-star-ring"></i>LangGraph</button>
+      <button class="mentor-chip" onclick="quickAsk('How do I deploy to Render?')"><i class="ti ti-rocket"></i>Deploy</button>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="mentor-input-row">
+    <div class="mentor-input-box">
+      <textarea
+        id="mentor-input"
+        placeholder="Ask anything about CodeGuard…"
+        rows="1"
+        aria-label="Chat input"
+      ></textarea>
+      <button id="mentor-send" aria-label="Send message">
+        <i class="ti ti-arrow-up"></i>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<style>
+/* ============================================
+   CHATBOT — COMPLETELY REDESIGNED
+   ============================================ */
+
+/* ---- Floating button ---- */
+#mentor-toggle {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9998;
+  border: none;
+  background: var(--purple);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0 20px 0 16px;
+  height: 52px;
+  cursor: pointer;
+  box-shadow: 0 4px 24px rgba(83,74,183,0.45), 0 1px 4px rgba(0,0,0,0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+#mentor-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(83,74,183,0.55), 0 2px 8px rgba(0,0,0,0.15);
+}
+.mentor-toggle-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font);
+  position: relative;
+  z-index: 1;
+}
+.mentor-toggle-inner i { font-size: 18px; }
+.mentor-toggle-ping {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 10px;
+  height: 10px;
+  background: #5DFFB4;
+  border-radius: 50%;
+  border: 2px solid var(--purple);
+}
+
+/* ---- Panel ---- */
+#mentor-panel {
+  position: fixed;
+  top: 0;
+  right: -440px;
+  width: 420px;
+  height: 100vh;
+  background: var(--bg);
+  border-left: 0.5px solid var(--border);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: -12px 0 48px rgba(0,0,0,0.1);
+}
+#mentor-panel.open { right: 0; }
+
+/* ---- Header ---- */
+.mentor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+.mentor-header-left { display: flex; align-items: center; gap: 12px; }
+.mentor-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--purple-bg);
+  color: var(--purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.mentor-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+.mentor-status {
+  font-size: 11px;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 1px;
+}
+.mentor-online-dot {
+  width: 7px;
+  height: 7px;
+  background: #22c55e;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.mentor-header-actions { display: flex; gap: 4px; }
+.mentor-header-actions button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.mentor-header-actions button:hover {
+  background: var(--bg2);
+  color: var(--text);
+}
+
+/* ---- Context bar ---- */
+.mentor-context-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  font-size: 11px;
+  color: var(--purple-text);
+  background: var(--purple-bg);
+  border-bottom: 0.5px solid var(--border);
+  flex-shrink: 0;
+}
+.mentor-context-bar i { font-size: 12px; }
+
+/* ---- Messages ---- */
+#mentor-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+#mentor-messages::-webkit-scrollbar { width: 4px; }
+#mentor-messages::-webkit-scrollbar-track { background: transparent; }
+#mentor-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.mentor-date-divider {
+  text-align: center;
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 4px 0;
+}
+
+/* AI message */
+.mentor-ai-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  animation: msgSlide 0.2s ease;
+}
+.mentor-msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--purple-bg);
+  color: var(--purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.mentor-msg-bubble {
+  background: var(--bg2);
+  border: 0.5px solid var(--border);
+  border-radius: 4px 14px 14px 14px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.65;
+  max-width: calc(100% - 44px);
+  word-break: break-word;
+}
+
+/* User message */
+.mentor-user-msg {
+  display: flex;
+  justify-content: flex-end;
+  animation: msgSlide 0.2s ease;
+}
+.mentor-user-bubble {
+  background: var(--purple);
+  color: #fff;
+  border-radius: 14px 4px 14px 14px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 82%;
+  word-break: break-word;
+}
+
+/* Markdown rendering inside AI bubbles */
+.mentor-msg-bubble p { margin: 0 0 8px; }
+.mentor-msg-bubble p:last-child { margin-bottom: 0; }
+.mentor-msg-bubble ul, .mentor-msg-bubble ol { padding-left: 18px; margin: 6px 0 8px; }
+.mentor-msg-bubble li { margin-bottom: 3px; }
+.mentor-msg-bubble li:last-child { margin-bottom: 0; }
+.mentor-msg-bubble strong { font-weight: 600; color: var(--text); }
+.mentor-msg-bubble code {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  background: var(--bg3);
+  border: 0.5px solid var(--border2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--purple);
+}
+.mentor-msg-bubble pre {
+  background: var(--bg3);
+  border: 0.5px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.mentor-msg-bubble pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.mentor-msg-bubble h3, .mentor-msg-bubble h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 10px 0 4px;
+}
+.mentor-msg-bubble blockquote {
+  border-left: 3px solid var(--purple);
+  background: var(--purple-bg);
+  color: var(--purple-text);
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+  margin: 8px 0;
+  font-size: 12px;
+}
+.mentor-msg-bubble hr {
+  border: none;
+  border-top: 0.5px solid var(--border);
+  margin: 10px 0;
+}
+/* severity badges inside AI responses */
+.mentor-msg-bubble .badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 600;
+  margin: 1px 2px;
+}
+.mentor-msg-bubble .badge-critical { background: var(--red-bg); color: var(--red); }
+.mentor-msg-bubble .badge-high { background: var(--amber-bg); color: var(--amber-text); }
+.mentor-msg-bubble .badge-medium { background: var(--blue-bg); color: var(--blue-text); }
+.mentor-msg-bubble .badge-low { background: var(--bg3); color: var(--text3); }
+.mentor-msg-bubble .badge-tip { background: var(--teal-bg); color: var(--teal-text); }
+
+/* Typing indicator */
+.mentor-typing {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  animation: msgSlide 0.2s ease;
+}
+.mentor-typing-dots {
+  background: var(--bg2);
+  border: 0.5px solid var(--border);
+  border-radius: 4px 14px 14px 14px;
+  padding: 12px 16px;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.mentor-typing-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text3);
+  display: inline-block;
+  animation: typingDot 1.2s infinite;
+}
+.mentor-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.mentor-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingDot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+@keyframes msgSlide {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Quick chips ---- */
+.mentor-quick-wrap {
+  padding: 10px 16px 8px;
+  border-top: 0.5px solid var(--border);
+  flex-shrink: 0;
+}
+.mentor-quick-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 7px;
+}
+.mentor-quick-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.mentor-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 0.5px solid var(--border2);
+  background: var(--bg2);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+  white-space: nowrap;
+}
+.mentor-chip i { font-size: 13px; }
+.mentor-chip:hover {
+  background: var(--purple-bg);
+  color: var(--purple-text);
+  border-color: var(--purple);
+}
+
+/* ---- Input ---- */
+.mentor-input-row {
+  padding: 10px 14px 14px;
+  border-top: 0.5px solid var(--border);
+  flex-shrink: 0;
+  background: var(--bg);
+}
+.mentor-input-box {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  background: var(--bg2);
+  border: 0.5px solid var(--border2);
+  border-radius: 14px;
+  padding: 8px 8px 8px 14px;
+  transition: border-color 0.15s;
+}
+.mentor-input-box:focus-within {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px var(--purple-bg);
+}
+#mentor-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.5;
+  resize: none;
+  max-height: 120px;
+  outline: none;
+  padding: 0;
+}
+#mentor-input::placeholder { color: var(--text3); }
+#mentor-send {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 10px;
+  background: var(--purple);
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+#mentor-send:hover { background: var(--purple-text); }
+#mentor-send:active { transform: scale(0.92); }
+#mentor-send:disabled { background: var(--bg3); color: var(--text3); cursor: not-allowed; }
+
+/* ---- Mobile ---- */
+@media (max-width: 768px) {
+  #mentor-panel { width: 100%; right: -100%; }
+  #mentor-toggle { bottom: 20px; right: 16px; }
+}
+</style>
+
+<script>
+/* ========================= */
+/* MENTOR CHATBOT — REDESIGNED */
+/* ========================= */
+
+const mentorPanel    = document.getElementById("mentor-panel");
+const mentorToggle   = document.getElementById("mentor-toggle");
+const mentorClose    = document.getElementById("mentor-close");
+const mentorClear    = document.getElementById("mentor-clear");
+const mentorMessages = document.getElementById("mentor-messages");
+const mentorInput    = document.getElementById("mentor-input");
+const mentorSend     = document.getElementById("mentor-send");
+const mentorContextEl = document.getElementById("mentor-context");
+
+/* ---- Open / close ---- */
+mentorToggle.addEventListener("click", () => {
+  mentorPanel.classList.add("open");
+  mentorInput.focus();
+});
+mentorClose.addEventListener("click", () => {
+  mentorPanel.classList.remove("open");
+});
+mentorClear.addEventListener("click", () => {
+  mentorMessages.innerHTML = '<div class="mentor-date-divider">Chat cleared</div>';
+});
+
+/* ---- Context tracking ---- */
+const contextMap = {
+  overview: "Overview",
+  architecture: "System Architecture",
+  pipeline: "Agent Pipeline",
+  "request-flow": "Request Flow",
+  techstack: "Tech Stack",
+  prebuild: "Pre-build Learning",
+  stage1: "Stage 1 — Sprint",
+  stage2: "Stage 2 — Depth",
+  stage3: "Stage 3 — Advanced",
+  resources: "Learning Resources",
+  checkpoints: "Project Checkpoints"
+};
+const _originalGoto = window.goto;
+window.goto = function(section) {
+  _originalGoto(section);
+  mentorContextEl.textContent = contextMap[section] || section;
+};
+
+/* ---- Auto-resize textarea ---- */
+mentorInput.addEventListener("input", () => {
+  mentorInput.style.height = "auto";
+  mentorInput.style.height = Math.min(mentorInput.scrollHeight, 120) + "px";
+});
+
+/* ---- Quick ask ---- */
+function quickAsk(text) {
+  mentorInput.value = text;
+  mentorInput.style.height = "auto";
+  mentorPanel.classList.add("open");
+  sendMentorMessage();
+}
+
+/* ---- Append messages ---- */
+function addUserMessage(text) {
+  const wrap = document.createElement("div");
+  wrap.className = "mentor-user-msg";
+  const bubble = document.createElement("div");
+  bubble.className = "mentor-user-bubble";
+  bubble.textContent = text;
+  wrap.appendChild(bubble);
+  mentorMessages.appendChild(wrap);
+  scrollMentor();
+}
+
+function addTypingIndicator() {
+  const wrap = document.createElement("div");
+  wrap.className = "mentor-typing";
+  wrap.id = "mentor-typing";
+  wrap.innerHTML = `
+    <div class="mentor-msg-avatar"><i class="ti ti-robot"></i></div>
+    <div class="mentor-typing-dots"><span></span><span></span><span></span></div>`;
+  mentorMessages.appendChild(wrap);
+  scrollMentor();
+}
+
+function removeTypingIndicator() {
+  const el = document.getElementById("mentor-typing");
+  if (el) el.remove();
+}
+
+function addAIMessage(html) {
+  const wrap = document.createElement("div");
+  wrap.className = "mentor-ai-msg";
+  wrap.innerHTML = `
+    <div class="mentor-msg-avatar"><i class="ti ti-robot"></i></div>
+    <div class="mentor-msg-bubble">${html}</div>`;
+  mentorMessages.appendChild(wrap);
+  scrollMentor();
+}
+
+function scrollMentor() {
+  mentorMessages.scrollTop = mentorMessages.scrollHeight;
+}
+
+/* ---- Markdown → HTML ---- */
+/* Handles Gemini's rich output: headings, bullets, numbered lists,
+   bold/italic, inline code, fenced code blocks, blockquotes, HRs,
+   and ASCII flow diagrams (lines with ─ ┐ ┘ ├ └ → are preserved in <pre>) */
+function escapeHTML(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function isAsciiDiagram(line) {
+  // Lines containing box-drawing chars or arrow combos = preserve as diagram
+  return /[─│┌┐└┘├┤┬┴┼╌╍═║╔╗╚╝╠╣╦╩╪╫▶◀→←↑↓⟶⟵]/.test(line)
+      || /─{3,}/.test(line)
+      || /[-─]{2,}[>]/.test(line);
+}
+
+function markdownToHTML(md) {
+  // 1. Extract fenced code blocks first (protect from further processing)
+  const codeBlocks = [];
+  let html = md.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+    const idx = codeBlocks.length;
+    codeBlocks.push(`<pre><code class="lang-${lang || 'text'}">${escapeHTML(code.trim())}</code></pre>`);
+    return `%%CODEBLOCK_${idx}%%`;
+  });
+
+  // 2. Process line by line
+  const lines = html.split('\n');
+  const result = [];
+  let inBlockquote = false;
+  let listBuffer = [];   // {type:'ul'|'ol', items:[]}
+  let diagramBuffer = [];
+
+  function flushList() {
+    if (!listBuffer.length) return;
+    const type = listBuffer[0].type;
+    const tag = type === 'ol' ? 'ol' : 'ul';
+    result.push(`<${tag}>${listBuffer.map(i => `<li>${i.text}</li>`).join('')}</${tag}>`);
+    listBuffer = [];
+  }
+  function flushDiagram() {
+    if (!diagramBuffer.length) return;
+    result.push(`<pre class="ascii-diagram">${escapeHTML(diagramBuffer.join('\n'))}</pre>`);
+    diagramBuffer = [];
+  }
+  function flushBlockquote() {
+    if (inBlockquote) { result.push('</blockquote>'); inBlockquote = false; }
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    const line = raw; // keep original for diagram detection
+
+    // --- Fenced code block placeholders (already extracted) ---
+    if (/^%%CODEBLOCK_\d+%%$/.test(raw.trim())) {
+      flushList(); flushDiagram(); flushBlockquote();
+      const idx = parseInt(raw.match(/(\d+)/)[1]);
+      result.push(codeBlocks[idx]);
+      continue;
+    }
+
+    // --- ASCII diagram lines ---
+    if (isAsciiDiagram(raw)) {
+      flushList(); flushBlockquote();
+      diagramBuffer.push(raw);
+      continue;
+    } else {
+      flushDiagram();
+    }
+
+    const trimmed = raw.trim();
+
+    // --- Empty line ---
+    if (!trimmed) {
+      flushList(); flushBlockquote();
+      continue;
+    }
+
+    // --- HR ---
+    if (/^(-{3,}|\*{3,}|={3,})$/.test(trimmed)) {
+      flushList(); flushBlockquote();
+      result.push('<hr>');
+      continue;
+    }
+
+    // --- Headings ---
+    const h5 = trimmed.match(/^##### (.+)/);
+    const h4 = trimmed.match(/^#### (.+)/);
+    const h3 = trimmed.match(/^### (.+)/);
+    const h2 = trimmed.match(/^## (.+)/);
+    const h1 = trimmed.match(/^# (.+)/);
+    if (h1||h2||h3||h4||h5) {
+      flushList(); flushBlockquote();
+      const lvl = h1?1:h2?2:h3?3:h4?4:5;
+      const txt = (h1||h2||h3||h4||h5)[1];
+      result.push(`<h${lvl}>${inlineFormat(txt)}</h${lvl}>`);
+      continue;
+    }
+
+    // --- Blockquote ---
+    const bq = trimmed.match(/^> (.+)/);
+    if (bq) {
+      flushList(); flushDiagram();
+      if (!inBlockquote) { result.push('<blockquote>'); inBlockquote = true; }
+      result.push(`<p>${inlineFormat(bq[1])}</p>`);
+      continue;
+    } else {
+      flushBlockquote();
+    }
+
+    // --- Unordered list ---
+    const ul = trimmed.match(/^[-*+] (.+)/);
+    if (ul) {
+      if (listBuffer.length && listBuffer[0].type === 'ol') flushList();
+      listBuffer.push({ type: 'ul', text: inlineFormat(ul[1]) });
+      continue;
+    }
+
+    // --- Ordered list ---
+    const ol = trimmed.match(/^\d+\. (.+)/);
+    if (ol) {
+      if (listBuffer.length && listBuffer[0].type === 'ul') flushList();
+      listBuffer.push({ type: 'ol', text: inlineFormat(ol[1]) });
+      continue;
+    }
+
+    // --- Regular paragraph ---
+    flushList();
+    result.push(`<p>${inlineFormat(trimmed)}</p>`);
+  }
+
+  // Flush any remaining buffers
+  flushList();
+  flushDiagram();
+  flushBlockquote();
+
+  return result.join('\n');
+}
+
+/* Apply inline formatting: bold, italic, inline code, links */
+function inlineFormat(text) {
+  return text
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/__(.+?)__/g, '<strong>$1</strong>')
+    .replace(/_(.+?)_/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+
+/* ---- Send ---- */
+mentorSend.addEventListener("click", sendMentorMessage);
+mentorInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMentorMessage();
+  }
+});
+
+/* Backend URL — change to your deployed URL when live */
+const MENTOR_API = "http://127.0.0.1:8000/mentor/chat";
+
+async function sendMentorMessage() {
+  const message = mentorInput.value.trim();
+  if (!message) return;
+
+  addUserMessage(message);
+  mentorInput.value = "";
+  mentorInput.style.height = "auto";
+  mentorSend.disabled = true;
+
+  addTypingIndicator();
+
+  try {
+    const currentContext = mentorContextEl.textContent;
+
+    const response = await fetch(MENTOR_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: message,
+        context: currentContext
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    removeTypingIndicator();
+    addAIMessage(markdownToHTML(data.response));
+
+  } catch (err) {
+    removeTypingIndicator();
+    addAIMessage(
+      `<p>⚠️ <strong>Could not reach the mentor backend.</strong></p>` +
+      `<p>Make sure your FastAPI server is running:</p>` +
+      `<pre><code>uvicorn main:app --reload</code></pre>` +
+      `<p>Expected at: <code>${MENTOR_API}</code></p>` +
+      `<p style="font-size:11px;color:var(--text3);margin-top:6px">Error: ${escapeHTML(err.message)}</p>`
+    );
+    console.error("Mentor error:", err);
+  } finally {
+    mentorSend.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
