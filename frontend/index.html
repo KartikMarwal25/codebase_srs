@@ -820,7 +820,26 @@ a:hover{text-decoration:underline}
 
 <script>
 const sections={overview:'s-overview',architecture:'s-architecture',pipeline:'s-pipeline','request-flow':'s-request-flow',techstack:'s-techstack',prebuild:'s-prebuild',stage1:'s-stage1',stage2:'s-stage2',stage3:'s-stage3',resources:'s-resources',checkpoints:'s-checkpoints'};
-let checks={};
+const checkpointStorageKey='codeguard-checkpoints';
+let checks=loadChecklistState();
+
+function loadChecklistState(){
+  try{
+    const saved=localStorage.getItem(checkpointStorageKey);
+    return saved?JSON.parse(saved):{};
+  }catch(e){
+    console.warn('Failed to load checkpoint state from localStorage',e);
+    return {};
+  }
+}
+
+function saveChecklistState(){
+  try{
+    localStorage.setItem(checkpointStorageKey,JSON.stringify(checks));
+  }catch(e){
+    console.warn('Failed to save checkpoint state to localStorage',e);
+  }
+}
 
 function goto(id){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -1087,6 +1106,7 @@ function buildItem(item){
 
 function toggle(id,el){
   checks[id]=el.checked;
+  saveChecklistState();
   const label=document.getElementById('ci-'+id);
   if(label)label.classList.toggle('done',el.checked);
   updateProgress();
